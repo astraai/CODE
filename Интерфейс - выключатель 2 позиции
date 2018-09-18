@@ -1,0 +1,43 @@
+<style> 
+input[type="checkbox"].switch_1{ 
+font-size: 30px; 
+-webkit-appearance: none; 
+-moz-appearance: none; 
+appearance: none; 
+width: 90px; 
+height: 46px;
+background: #ddd; 
+border-radius: 2em; 
+position: relative;
+cursor: pointer; 
+outline: none; 
+-webkit-transition: all .2s ease-in-out; 
+transition: all .2s ease-in-out; 
+} 
+
+
+input[type="checkbox"].switch_1:checked{ 
+background: Orange; 
+} 
+
+input[type="checkbox"].switch_1:after{ 
+position: absolute; 
+content: ""; 
+width: 45px; 
+height: 45px; 
+border-radius: 50%; 
+background: #fff; 
+-webkit-box-shadow: 0 0 .25em rgba(0,0,0,.3); 
+box-shadow: 0 0 .25em rgba(0,0,0,.3); 
+-webkit-transform: scale(.7); 
+transform: scale(.9); 
+left: 0; 
+-webkit-transition: all .2s ease-in-out; 
+transition: all .2s ease-in-out; 
+} 
+
+input[type="checkbox"].switch_1:checked:after{ 
+left: calc(100% - 1.5em); 
+}
+</style> 
+<input onClick='callMethod("%.Switch");' type='checkbox' %.status|"-;checked"% class="switch_1"> 
