@@ -1,0 +1,40 @@
+<style>
+ .checkboxFour2 {
+    width: 40px;
+    height: 40px;
+    background: #ddd;
+    margin: 10px 10px;
+
+    border-radius: 100%;
+    position: relative;
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.5);
+}
+ 
+.checkboxFour2 label {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 100px;
+
+    transition: all .5s ease;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1;
+
+    background: #333;
+    box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);
+}
+ 
+ .checkboxFour2.checked label {
+    background: Red;
+}
+ 
+</style>
+
+<section>
+    <div class='checkboxFour2 %.status|"-;checked"%' >
+        <label for="checkboxFourInput2"></label>
+    </div>
+</section>
