@@ -1,0 +1,20 @@
+$myCurl = curl_init();
+curl_setopt_array($myCurl, array(
+    //CURLOPT_URL => 'http://192.168.1.100:8080/requests/status.xml?command=in_play&input='.rawurlencode('http://uk1.internet-radio.com:8294/live'),
+	CURLOPT_URL => 'http://192.168.1.100:13579/browser.html?path='.rawurlencode('D:\Музыка\Louna\2012 - Время X\08 - Ночь, Дорога и Рок.mp3'),
+    CURLOPT_CONNECTTIMEOUT => 1,
+ 	CURLOPT_USERPWD => ":ASTRA"
+));
+$response = curl_exec($myCurl);
+if ($response==NULL)
+ say("Плеер недоступен",2);
+else
+{
+curl_setopt_array($myCurl, array(
+    CURLOPT_URL => 'http://192.168.1.100:8080/requests/status.xml?command=volume&val=255',
+ 	CURLOPT_CONNECTTIMEOUT => 1,
+ 	CURLOPT_USERPWD => ":ASTRA"
+));
+$response = curl_exec($myCurl); 
+}
+curl_close($myCurl);
