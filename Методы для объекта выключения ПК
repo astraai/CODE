@@ -1,0 +1,50 @@
+Метод check
+  
+  $ping = exec("ping ".$this->getProperty('ip')." -c1 & exit", $output, $status);
+    if (strpos($output[3], '100% packet loss') !== FALSE) {
+        $this->setProperty('status',0);
+    } else {
+        $this->setProperty('status',1);
+    }
+    
+    
+Метод On
+
+   shell_exec("wakeonlan -p 7 ".$this->getProperty('mac'));    
+    
+    
+Метод Off
+
+  set_time_limit(3);
+  $this->CallMethod("check");
+  if ($this->getProperty('status')!=1)
+    die("");
+  $host    = $this->getProperty('ip');
+  $port    = 9999;
+  $message = "Sleep";
+  $socket = socket_create(AF_INET, SOCK_STREAM, 0) or die("Could not create socket\n");
+  $timeout = array('sec'=>1,'usec'=>500000);
+  socket_set_option($socket,SOL_SOCKET,SO_RCVTIMEO,$timeout);
+  $result = socket_connect($socket, $host, $port) or die("Could not connect to server\n");  
+  if($result) { 
+   socket_write($socket, $message, strlen($message)) or die("Could not send data to server\n");
+   $result = socket_read ($socket, 1024) or die("Could not read server response\n");
+  }
+  /*if ($result=="ok")
+   say("Выключаю компьютер",2);*/
+  //echo "Reply From Server  :".$result ."<br>";
+    
+    
+Метод Switch   
+    $val=$this->getProperty('status');
+    $val++;
+    if ($val>1)
+    {
+	    $val=0;
+    	$this->CallMethod("Off");
+    }
+    else
+    {
+     	$this->CallMethod("On");
+    }
+    $this->setProperty('status',$val);
