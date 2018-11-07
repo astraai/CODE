@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Principal;
+using System.Diagnostics;
+//using Microsoft.Win32;
+
+namespace AstraControl
+{
+    public partial class Form1 : Form
+    {
+        static bool IsElevated => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+        Microsoft.Win32.RegistryKey Key;
+        TcpListener myList;
+        ASCIIEncoding asen = new ASCIIEncoding();
+        public Form1()
+        {
+            InitializeComponent();
+            notifyIcon1.Click += notifyIcon1_Click;
+            //this.ShowInTaskbar = false;
+            //Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerChange;
+            string Host = System.Net.Dns.GetHostName();
+            string IP = System.Net.Dns.GetHostByName(Host).AddressList[0].ToString();
+            IPAddress ipAd = IPAddress.Parse(IP);
+            myList = new TcpListener(ipAd, 9999);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
+            myList.Start();
+            if (!IsElevated)
+            {
+                checkBox1.Enabled = false;
+            }
+            else
+            {
+                Key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                if (Key.GetValue("AstraControl") != null)
+                {
+                    checkBox1.Checked = true;
+                }
+            }
+            Log("Запуск сервера. Порт: 9999...");
+            Log("Локальный ip:" +
+                              myList.LocalEndpoint);
+            Log("Ожидание подключения...");
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                Hide();
+                notifyIcon1.Visible = true;
+            }
+        }
+
+        void Log(String mess)
+        {
+            textBox1.Text += mess+ Environment.NewLine;
+            textBox1.SelectionStart = textBox1.Text.Length;
+            textBox1.ScrollToCaret();
+        }
+
+        void notifyIcon1_Click(object sender, EventArgs e)
+        {
+            this.Show();
+            //notifyIcon1.Visible = false;
+            this.WindowState = FormWindowState.Normal;
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            timer1.Enabled = false;
+            
+            try
+            {
+                if (myList.Pending())
+                {
+                    Socket s = myList.AcceptSocket();
+                    Log("Соединение установленно " + s.RemoteEndPoint);
+                    byte[] b = new byte[100];
+                    int k = s.Receive(b);
+                    string szReceived = Encoding.ASCII.GetString(b.Take(k).ToArray());
+                    Log(szReceived);
+                    //Log("Получено->|" + szReceived + "|");
+
+                    switch (szReceived)
+                    {
+                        case "Sleep":
+                            Log("Получена команда сон");
+                            s.Send(asen.GetBytes("ok"));
+                            Application.SetSuspendState(PowerState.Suspend, true, true);
+                            s.Close();
+                            break;
+                        case "ShotDown":
+                            Log("Получена команда выключения");
+                            s.Send(asen.GetBytes("ok"));
+                            var p = new ProcessStartInfo("cmd", "/r shutdown -f -s -t 0") { CreateNoWindow = true };
+                            Process.Start(p);
+                            s.Close();
+                            break;
+                        default:
+                            s.Send(asen.GetBytes("err"));
+                            Log("Неизвестная команда");
+                            s.Close();
+                            break;
+                    }
+                    
+
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Source != null)
+                    Log("Ошибка: {0}" +ex.Source);
+            }
+            timer1.Enabled = true;
+
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_ResizeBegin(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_ResizeEnd(object sender, EventArgs e)
+        {
+
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+            if (checkBox1.Checked)
+            {
+                
+                Key.SetValue("AstraControl", Application.ExecutablePath);
+                Key.Close();
+            }
+            else
+            {
+                Key.DeleteValue("AstraControl", false);
+                Key.Close();
+            }
+        }
+
+        /*private void OnPowerChange(object s, PowerModeChangedEventArgs e)
+        {
+            switch (e.Mode)
+            {
+                case PowerModes.Resume:
+                    myList.Start();
+                    break;
+                case PowerModes.Suspend:
+                    myList.Stop();
+                    break;
+            }
+        }*/
+    }
+}
